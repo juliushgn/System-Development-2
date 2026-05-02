@@ -1,0 +1,338 @@
+﻿<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${request.requestNumber} + ' · SRM'">Anfrage</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="srm-layout">
+
+    <!-- ── Sidebar ──────────────────────────────────────────────── -->
+    <aside class="srm-sidebar" id="sidebar">
+        <a class="srm-brand" th:href="@{/}">
+            <div class="srm-brand-mark"><i class="bi bi-ticket-detailed"></i></div>
+            <span class="srm-brand-name">SRM <em>System</em></span>
+        </a>
+
+        <nav class="srm-nav">
+            <span class="srm-nav-label" data-i18n="nav.label">Navigation</span>
+            <th:block th:if="${currentUser.role.name() == 'MANAGER'}">
+                <a class="srm-nav-item" th:href="@{/manager/dashboard}">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span data-i18n="nav.dashboard">Dashboard</span>
+                </a>
+                <a class="srm-nav-item" th:href="@{/manager/requests}">
+                    <i class="bi bi-table"></i>
+                    <span data-i18n="nav.allRequests">Alle Anfragen</span>
+                </a>
+            </th:block>
+            <a class="srm-nav-item active" th:href="@{/agent/requests}">
+                <i class="bi bi-inbox"></i>
+                <span data-i18n="nav.queue">Anfragen-Queue</span>
+            </a>
+        </nav>
+
+        <div class="srm-sidebar-footer">
+            <!-- Preferences: dark mode + language -->
+            <div class="srm-sidebar-prefs">
+                <button type="button" class="srm-pref-btn srm-theme-btn" title="Dunkelmodus"><i class="bi bi-moon-stars"></i><span class="pref-label">Dunkelmodus</span></button>
+                <button type="button" class="srm-pref-btn srm-lang-btn" title="English"><i class="bi bi-translate"></i><span class="pref-label">English</span></button>
+            </div>
+
+            <div class="srm-user-row">
+                <div class="srm-avatar"
+                     th:text="${#strings.substring(currentUser.firstName,0,1) + #strings.substring(currentUser.lastName,0,1)}">CA</div>
+                <div>
+                    <div class="srm-user-info-name" th:text="${currentUser.fullName}">Carol Wagner</div>
+                    <div class="srm-user-info-role"
+                         th:attr="data-i18n=${'role.' + currentUser.role.name().toLowerCase()}">Service Agent</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="srm-logout-btn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span data-i18n="nav.logout">Abmelden</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ── Main ─────────────────────────────────────────────────── -->
+    <div class="srm-main">
+        <div class="srm-topbar">
+            <button class="srm-menu-btn" id="sidebarToggle" aria-label="Menü öffnen">
+                <i class="bi bi-list"></i>
+            </button>
+            <span class="srm-topbar-title" th:text="${request.requestNumber}">REQ-00001</span>
+        </div>
+
+        <div class="srm-content">
+            <!-- Page header -->
+            <div class="page-header d-flex align-center gap-3 mb-5">
+                <a th:href="@{/agent/requests}" class="btn btn-secondary btn-icon btn-sm"
+                   data-i18n-label="detail.back" aria-label="Zurück">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div class="d-flex align-center gap-3 flex-1" style="flex-wrap:wrap;">
+                    <code style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:600;
+                                 color:var(--blue);background:var(--blue-tonal);
+                                 padding:4px 10px;border-radius:var(--r-xs);"
+                          th:text="${request.requestNumber}">REQ-00001</code>
+                    <span th:class="'badge status-' + ${request.status.name().toLowerCase().replace('_','-')}"
+                          th:text="${request.status.displayName}"></span>
+                    <span th:class="'badge priority-' + ${request.priority.name().toLowerCase()}"
+                          th:text="${request.priority.displayName}"></span>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div th:if="${successMsg}" class="alert alert-success mb-5">
+                <i class="bi bi-check-circle"></i>
+                <span class="alert-text" th:text="${successMsg}"></span>
+                <button class="alert-close" data-dismiss="alert">✕</button>
+            </div>
+            <div th:if="${errorMsg}" class="alert alert-danger mb-5">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span class="alert-text" th:text="${errorMsg}"></span>
+                <button class="alert-close" data-dismiss="alert">✕</button>
+            </div>
+
+            <div class="layout-main">
+
+                <!-- ── Left column ───────────────────────────────── -->
+                <div>
+                    <!-- Request content -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="bi bi-file-text" style="color:var(--blue);"></i>
+                            <span class="card-header-title" th:text="${request.title}">Titel</span>
+                        </div>
+                        <div class="card-body">
+                            <p th:text="${request.description}"
+                               style="color:var(--text-muted);white-space:pre-wrap;
+                                      line-height:1.65;font-size:14px;margin:0;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Add comment -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="bi bi-chat" style="color:var(--blue);"></i>
+                            <span class="card-header-title" data-i18n="detail.addComment">Kommentar hinzufügen</span>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/agent/requests/{id}/comment(id=${request.id})}" method="post">
+                                <div class="form-group">
+                                    <textarea class="form-control" name="content" rows="3"
+                                              placeholder="Kommentar oder Hinweis…"
+                                              data-i18n-ph="detail.commentPh"
+                                              required></textarea>
+                                </div>
+                                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                                    <label style="display:flex;align-items:center;gap:8px;
+                                                  font-size:13px;color:var(--text-muted);cursor:pointer;">
+                                        <input type="checkbox" name="internal" value="true"
+                                               class="srm-check srm-check-purple">
+                                        <i class="bi bi-lock" style="font-size:13px;color:var(--purple);"></i>
+                                        <span data-i18n="detail.internal">Interner Kommentar (nur für Agenten sichtbar)</span>
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-tonal btn-sm">
+                                    <i class="bi bi-send"></i>
+                                    <span data-i18n="detail.postBtn">Posten</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-activity" style="color:var(--blue);"></i>
+                            <span class="card-header-title" data-i18n="detail.activity">Aktivität</span>
+                        </div>
+                        <div class="card-body" style="padding:0 20px;">
+                            <div th:if="${#lists.isEmpty(comments)}" class="empty-state" style="padding:36px 0;">
+                                <i class="bi bi-chat-dots"></i>
+                                <p data-i18n="detail.noActivity">Noch keine Aktivität.</p>
+                            </div>
+                            <div class="activity-list">
+                                <div th:each="comment : ${comments}"
+                                     th:class="'activity-item' + (${comment.internal} ? ' internal' : '')">
+                                    <div class="activity-header">
+                                        <div class="d-flex align-center gap-2">
+                                            <span class="activity-author" th:text="${comment.author.fullName}">Name</span>
+                                            <span class="chip" style="font-size:10.5px;"
+                                                  th:text="${comment.author.role.name()}"></span>
+                                        </div>
+                                        <span class="activity-time"
+                                              th:text="${#temporals.format(comment.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                                    </div>
+                                    <p class="activity-text"
+                                       th:classappend="${comment.resolutionNote} ? ' resolution'"
+                                       th:text="${comment.content}"></p>
+                                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+                                        <span th:if="${comment.resolutionNote}" class="resolution-tag">
+                                            <i class="bi bi-check-circle-fill" style="font-size:11px;"></i>
+                                            <span data-i18n="detail.resTag">Lösungshinweis</span>
+                                        </span>
+                                        <span th:if="${comment.internal}" class="internal-tag">
+                                            <i class="bi bi-lock-fill" style="font-size:10px;"></i>
+                                            <span data-i18n="detail.intTag">Intern</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Right column ──────────────────────────────── -->
+                <div>
+                    <!-- Details -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="bi bi-info-circle" style="color:var(--blue);"></i>
+                            <span class="card-header-title" data-i18n="detail.details">Details</span>
+                        </div>
+                        <div class="card-body" style="padding:4px 20px 8px;">
+                            <div class="detail-section">
+                                <div class="detail-item">
+                                    <div class="detail-label" data-i18n="detail.creator">Ersteller</div>
+                                    <div class="detail-value" th:text="${request.submittedBy.fullName}"></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label" data-i18n="detail.dept">Abteilung</div>
+                                    <div class="detail-value"
+                                         th:text="${request.submittedBy.department ?: '—'}"></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label" data-i18n="detail.category">Kategorie</div>
+                                    <div class="detail-value" th:text="${request.category.displayName}"></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label" data-i18n="detail.assignedTo">Zugewiesen an</div>
+                                    <div class="detail-value" style="display:flex;align-items:center;gap:6px;">
+                                        <span th:text="${request.assignedTo?.fullName ?: '—'}"></span>
+                                        <!-- Change assignee toggle (only when assigned) -->
+                                        <button th:if="${request.assignedTo != null}"
+                                                data-toggle-target="reassign-form"
+                                                type="button"
+                                                style="background:none;border:none;cursor:pointer;
+                                                       color:var(--text-dim);padding:0;line-height:1;"
+                                                title="Zuweisung ändern">
+                                            <i class="bi bi-pencil" style="font-size:12px;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Reassign form (hidden by default, shown by JS toggle) -->
+                                <div th:if="${request.assignedTo != null}"
+                                     id="reassign-form"
+                                     style="display:none;padding:8px 0 4px;">
+                                    <form th:action="@{/agent/requests/{id}/assign(id=${request.id})}" method="post">
+                                        <select class="form-select" name="agentId"
+                                                style="margin-bottom:8px;font-size:13px;">
+                                            <option th:each="agent : ${agents}"
+                                                    th:value="${agent.id}"
+                                                    th:text="${agent.fullName}"
+                                                    th:selected="${request.assignedTo?.id == agent.id}"></option>
+                                        </select>
+                                        <button type="submit" class="btn btn-tonal btn-sm" style="width:100%;">
+                                            <i class="bi bi-person-check"></i>
+                                            <span data-i18n="detail.assignBtn">Zuweisen</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label" data-i18n="detail.created">Erstellt</div>
+                                    <div class="detail-value"
+                                         th:text="${#temporals.format(request.createdAt, 'dd.MM.yyyy HH:mm')}"></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label" data-i18n="detail.modified">Zuletzt geändert</div>
+                                    <div class="detail-value"
+                                         th:text="${#temporals.format(request.updatedAt, 'dd.MM.yyyy HH:mm')}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assign panel — only when no assignee -->
+                    <div class="card mb-4" th:if="${request.assignedTo == null}">
+                        <div class="card-header">
+                            <i class="bi bi-person-check" style="color:var(--blue);"></i>
+                            <span class="card-header-title" data-i18n="detail.assign">Anfrage zuweisen</span>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/agent/requests/{id}/assign(id=${request.id})}" method="post">
+                                <div class="form-group">
+                                    <select class="form-select" name="agentId" required>
+                                        <option value="" data-i18n="detail.selectAgent">Agent wählen…</option>
+                                        <option th:each="agent : ${agents}"
+                                                th:value="${agent.id}"
+                                                th:text="${agent.fullName}"></option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">
+                                    <i class="bi bi-person-check"></i>
+                                    <span data-i18n="detail.assignBtn">Zuweisen</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Status update — only when assigned -->
+                    <div class="card" th:if="${request.assignedTo != null}">
+                        <div class="card-header">
+                            <i class="bi bi-arrow-repeat" style="color:var(--blue);"></i>
+                            <span class="card-header-title" data-i18n="detail.status">Status aktualisieren</span>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/agent/requests/{id}/status(id=${request.id})}" method="post">
+                                <!-- Optional comment -->
+                                <div class="form-group">
+                                    <textarea class="form-control" name="comment" rows="2"
+                                              placeholder="Optionaler Hinweis…"
+                                              data-i18n-ph="detail.notePh"
+                                              style="font-size:13px;"></textarea>
+                                </div>
+                                <!-- Resolution note checkbox -->
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:flex;align-items:center;gap:8px;
+                                                  font-size:13px;color:var(--text-muted);cursor:pointer;">
+                                        <input type="checkbox" name="resolutionNote" value="true"
+                                               class="srm-check srm-check-green">
+                                        <i class="bi bi-check-circle" style="font-size:13px;color:var(--green);"></i>
+                                        <span data-i18n="detail.resolution">Als Lösungshinweis markieren</span>
+                                    </label>
+                                </div>
+                                <!-- Transition buttons — only valid ones -->
+                                <div class="status-btn-grid">
+                                    <th:block th:each="s : ${allStatuses}">
+                                        <button th:if="${request.status.canTransitionTo(s)}"
+                                                type="submit"
+                                                name="newStatus"
+                                                th:value="${s.name()}"
+                                                th:class="'status-transition-btn to-' + ${s.name().toLowerCase().replace('_','-')}"
+                                                th:text="${s.displayName}">
+                                        </button>
+                                    </th:block>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.layout-main -->
+        </div>
+    </div>
+</div>
+
+<div class="srm-overlay" id="sidebarOverlay"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+
