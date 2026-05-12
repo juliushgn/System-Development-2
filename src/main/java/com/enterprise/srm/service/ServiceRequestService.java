@@ -62,6 +62,24 @@ public class ServiceRequestService {
         return requestRepository.findByAssignedToOrderByCreatedAtDesc(agent);
     }
 
+    @Transactional(readOnly = true)
+    public List<ServiceRequest> getInProgressRequests() {
+        return requestRepository.findByStatusInOrderByCreatedAtDesc(
+                List.of(RequestStatus.ASSIGNED, RequestStatus.IN_PROGRESS));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceRequest> getWaitingRequests() {
+        return requestRepository.findByStatusInOrderByCreatedAtDesc(
+                List.of(RequestStatus.WAITING_FOR_INFO));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceRequest> getCompletedRequests() {
+        return requestRepository.findByStatusInOrderByCreatedAtDesc(
+                List.of(RequestStatus.RESOLVED, RequestStatus.CLOSED));
+    }
+
     public ServiceRequest assignRequest(Long requestId, Long agentId) {
         ServiceRequest request = findById(requestId);
         User agent = userRepository.findById(agentId)
@@ -123,7 +141,7 @@ public class ServiceRequestService {
         if (query == null || query.isBlank()) {
             return getAllRequests();
         }
-        return requestRepository.searchAll(query);
+        return requestRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query);
     }
 
     @Transactional(readOnly = true)

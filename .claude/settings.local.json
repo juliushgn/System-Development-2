@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\juliu\\\\Desktop\\\\Programmieren\\\\Uni\\\\System Development 2\" -Force)"
+    ]
+  }
+}

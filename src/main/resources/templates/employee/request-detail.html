@@ -11,45 +11,7 @@
 <div class="srm-layout">
 
     <!-- ── Sidebar ──────────────────────────────────────────────── -->
-    <aside class="srm-sidebar" id="sidebar">
-        <a class="srm-brand" th:href="@{/}">
-            <div class="srm-brand-mark"><i class="bi bi-ticket-detailed"></i></div>
-            <span class="srm-brand-name">SRM <em>System</em></span>
-        </a>
-
-        <nav class="srm-nav">
-            <span class="srm-nav-label" data-i18n="nav.label">Navigation</span>
-            <a class="srm-nav-item active" th:href="@{/employee/requests}">
-                <i class="bi bi-list-ul"></i>
-                <span data-i18n="nav.myRequests">Meine Anfragen</span>
-            </a>
-            <a class="srm-nav-item" th:href="@{/employee/requests/new}">
-                <i class="bi bi-plus-circle"></i>
-                <span data-i18n="nav.newRequest">Neue Anfrage</span>
-            </a>
-        </nav>
-
-        <div class="srm-sidebar-footer">
-            <div class="srm-sidebar-prefs">
-                <button type="button" class="srm-pref-btn srm-theme-btn" title="Dunkelmodus"><i class="bi bi-moon-stars"></i><span class="pref-label">Dunkelmodus</span></button>
-                <button type="button" class="srm-pref-btn srm-lang-btn" title="English"><i class="bi bi-translate"></i><span class="pref-label">English</span></button>
-            </div>
-            <div class="srm-user-row">
-                <div class="srm-avatar"
-                     th:text="${#strings.substring(currentUser.firstName,0,1) + #strings.substring(currentUser.lastName,0,1)}">AM</div>
-                <div>
-                    <div class="srm-user-info-name" th:text="${currentUser.fullName}">Alice Meyer</div>
-                    <div class="srm-user-info-role" data-i18n="role.employee">Mitarbeiter</div>
-                </div>
-            </div>
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="srm-logout-btn">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span data-i18n="nav.logout">Abmelden</span>
-                </button>
-            </form>
-        </div>
-    </aside>
+    <aside th:replace="~{fragments/sidebar :: sidebar('myRequests')}"></aside>
 
     <!-- ── Main ─────────────────────────────────────────────────── -->
     <div class="srm-main">
@@ -61,6 +23,18 @@
         </div>
 
         <div class="srm-content">
+            <!-- Alerts -->
+            <div th:if="${successMsg}" class="alert alert-success">
+                <i class="bi bi-check-circle"></i>
+                <span class="alert-text" th:text="${successMsg}"></span>
+                <button class="alert-close" data-dismiss="alert">✕</button>
+            </div>
+            <div th:if="${errorMsg}" class="alert alert-error">
+                <i class="bi bi-exclamation-circle"></i>
+                <span class="alert-text" th:text="${errorMsg}"></span>
+                <button class="alert-close" data-dismiss="alert">✕</button>
+            </div>
+
             <!-- Page header -->
             <div class="page-header d-flex align-center gap-3 mb-5">
                 <a th:href="@{/employee/requests}" class="btn btn-secondary btn-icon btn-sm">
@@ -94,6 +68,17 @@
                         </div>
                     </div>
 
+                    <!-- Waiting-for-info banner -->
+                    <div th:if="${request.status.name() == 'WAITING_FOR_INFO'}"
+                         class="alert"
+                         style="background:var(--orange-tonal,#FFF3E0);border-color:var(--orange,#FB8C00);
+                                color:var(--text);margin-bottom:16px;">
+                        <i class="bi bi-hourglass-split" style="color:var(--orange,#FB8C00);flex-shrink:0;"></i>
+                        <span class="alert-text" data-i18n="empDet.waitingBanner">
+                            Der Agent wartet auf Ihre Antwort. Bitte antworten Sie unten.
+                        </span>
+                    </div>
+
                     <!-- Activity -->
                     <div class="card">
                         <div class="card-header">
@@ -125,6 +110,32 @@
                                     </span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Reply form (not shown on closed/resolved tickets) -->
+                    <div th:unless="${request.status.name() == 'CLOSED' or request.status.name() == 'RESOLVED'}"
+                         class="card" style="margin-top:16px;">
+                        <div class="card-header">
+                            <i class="bi bi-reply" style="color:var(--blue);"></i>
+                            <span class="card-header-title" data-i18n="empDet.replyTitle">Antwort senden</span>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/employee/requests/{id}/comment(id=${request.id})}" method="post">
+                                <div class="form-group">
+                                    <textarea class="form-control" name="content" rows="3"
+                                              data-i18n-ph="empDet.replyPh"
+                                              placeholder="Ihre Antwort oder weitere Informationen…"
+                                              required style="resize:vertical;"></textarea>
+                                </div>
+                                <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                            th:classappend="${request.status.name() == 'WAITING_FOR_INFO'} ? '' : 'btn-secondary'">
+                                        <i class="bi bi-send"></i>
+                                        <span data-i18n="empDet.replyBtn">Absenden</span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

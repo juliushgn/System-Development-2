@@ -15,6 +15,8 @@
       'role.agent':         'Service Agent',
       'role.employee':      'Mitarbeiter',
       'role.manager':       'Manager',
+      'theme.toDark':       'Dunkelmodus',
+      'theme.toLight':      'Hellmodus',
       // Table headers
       'th.no':              'Ticket #',
       'th.title':           'Titel',
@@ -34,9 +36,19 @@
       'queue.cardMine':     'Mir zugewiesene Anfragen',
       'queue.openLabel':    'offen',
       'queue.reqLabel':     'Anfragen',
-      'queue.emptyAll':     'Keine offenen Anfragen. Alles erledigt!',
-      'queue.emptyMine':    'Keine Anfragen sind Ihnen zugewiesen.',
-      'queue.editBtn':      'Bearbeiten',
+      'queue.emptyAll':       'Keine offenen Anfragen. Alles erledigt!',
+      'queue.emptyMine':      'Keine Anfragen sind Ihnen zugewiesen.',
+      'queue.editBtn':        'Bearbeiten',
+      // New tabs
+      'queue.tabInProgress':  'In Bearbeitung',
+      'queue.tabWaiting':     'Wartet auf Antwort',
+      'queue.tabDone':        'Abgeschlossen',
+      'queue.cardInProgress': 'In Bearbeitung',
+      'queue.cardWaiting':    'Wartet auf Antwort',
+      'queue.cardDone':       'Abgeschlossene Anfragen',
+      'queue.emptyInProgress':'Keine Anfragen in Bearbeitung.',
+      'queue.emptyWaiting':   'Keine Anfragen warten auf eine Antwort.',
+      'queue.emptyDone':      'Keine abgeschlossenen Anfragen.',
       // Agent detail
       'detail.back':        'Zurück',
       'detail.activity':    'Aktivität',
@@ -71,6 +83,13 @@
       'emp.empty':          'Sie haben noch keine Anfragen gestellt.',
       'emp.firstBtn':       'Erste Anfrage stellen',
       'emp.viewBtn':        'Ansehen',
+      'emp.tabAll':         'Alle',
+      'emp.tabWaiting':     'Handlungsbedarf',
+      'emp.tabActive':      'Aktiv',
+      'emp.tabDone':        'Abgeschlossen',
+      'emp.emptyWaiting':   'Keine Anfragen erfordern Ihre Rückmeldung.',
+      'emp.emptyActive':    'Keine aktiven Anfragen.',
+      'emp.emptyDone':      'Keine abgeschlossenen Anfragen.',
       // Employee – new request
       'empNew.title':       'Neue Anfrage',
       'empNew.subtitle':    'Beschreiben Sie Ihr Anliegen',
@@ -85,13 +104,17 @@
       'empNew.submit':      'Anfrage absenden',
       'empNew.cancel':      'Abbrechen',
       // Employee – detail
-      'empDet.activity':    'Aktivität',
-      'empDet.noActivity':  'Noch keine Aktivität.',
-      'empDet.details':     'Details',
-      'empDet.category':    'Kategorie',
-      'empDet.priority':    'Priorität',
-      'empDet.assignedTo':  'Zugewiesen an',
-      'empDet.notAssigned': 'Nicht zugewiesen',
+      'empDet.activity':      'Aktivität',
+      'empDet.noActivity':    'Noch keine Aktivität.',
+      'empDet.details':       'Details',
+      'empDet.category':      'Kategorie',
+      'empDet.priority':      'Priorität',
+      'empDet.assignedTo':    'Zugewiesen an',
+      'empDet.notAssigned':   'Nicht zugewiesen',
+      'empDet.waitingBanner': 'Der Agent wartet auf Ihre Antwort. Bitte antworten Sie unten.',
+      'empDet.replyTitle':    'Antwort senden',
+      'empDet.replyPh':       'Ihre Antwort oder weitere Informationen…',
+      'empDet.replyBtn':      'Absenden',
       'empDet.created':     'Erstellt',
       'empDet.modified':    'Zuletzt geändert',
       // Manager dashboard
@@ -129,6 +152,8 @@
       'role.agent':         'Service Agent',
       'role.employee':      'Employee',
       'role.manager':       'Manager',
+      'theme.toDark':       'Dark mode',
+      'theme.toLight':      'Light mode',
       // Table headers
       'th.no':              'Ticket #',
       'th.title':           'Title',
@@ -148,9 +173,19 @@
       'queue.cardMine':     'Requests assigned to me',
       'queue.openLabel':    'open',
       'queue.reqLabel':     'requests',
-      'queue.emptyAll':     'No open requests. All done!',
-      'queue.emptyMine':    'No requests are assigned to you.',
-      'queue.editBtn':      'Edit',
+      'queue.emptyAll':       'No open requests. All done!',
+      'queue.emptyMine':      'No requests are assigned to you.',
+      'queue.editBtn':        'Edit',
+      // New tabs
+      'queue.tabInProgress':  'In Progress',
+      'queue.tabWaiting':     'Waiting for Answer',
+      'queue.tabDone':        'Completed',
+      'queue.cardInProgress': 'In Progress',
+      'queue.cardWaiting':    'Waiting for Answer',
+      'queue.cardDone':       'Completed Requests',
+      'queue.emptyInProgress':'No requests currently in progress.',
+      'queue.emptyWaiting':   'No requests waiting for an answer.',
+      'queue.emptyDone':      'No completed requests.',
       // Agent detail
       'detail.back':        'Back',
       'detail.activity':    'Activity',
@@ -185,6 +220,13 @@
       'emp.empty':          'You haven\'t submitted any requests yet.',
       'emp.firstBtn':       'Submit first request',
       'emp.viewBtn':        'View',
+      'emp.tabAll':         'All',
+      'emp.tabWaiting':     'Action Needed',
+      'emp.tabActive':      'Active',
+      'emp.tabDone':        'Completed',
+      'emp.emptyWaiting':   'No requests require your response.',
+      'emp.emptyActive':    'No active requests.',
+      'emp.emptyDone':      'No completed requests.',
       // Employee – new request
       'empNew.title':       'New Request',
       'empNew.subtitle':    'Describe your issue',
@@ -199,15 +241,19 @@
       'empNew.submit':      'Submit request',
       'empNew.cancel':      'Cancel',
       // Employee – detail
-      'empDet.activity':    'Activity',
-      'empDet.noActivity':  'No activity yet.',
-      'empDet.details':     'Details',
-      'empDet.category':    'Category',
-      'empDet.priority':    'Priority',
-      'empDet.assignedTo':  'Assigned to',
-      'empDet.notAssigned': 'Not assigned',
-      'empDet.created':     'Created',
-      'empDet.modified':    'Last modified',
+      'empDet.activity':      'Activity',
+      'empDet.noActivity':    'No activity yet.',
+      'empDet.details':       'Details',
+      'empDet.category':      'Category',
+      'empDet.priority':      'Priority',
+      'empDet.assignedTo':    'Assigned to',
+      'empDet.notAssigned':   'Not assigned',
+      'empDet.created':       'Created',
+      'empDet.modified':      'Last modified',
+      'empDet.waitingBanner': 'The agent is waiting for your response. Please reply below.',
+      'empDet.replyTitle':    'Send a reply',
+      'empDet.replyPh':       'Your reply or additional information…',
+      'empDet.replyBtn':      'Send',
       // Manager dashboard
       'dash.title':         'Dashboard',
       'dash.subtitle':      'Overview of all service requests',
@@ -248,20 +294,23 @@
   /* ── Dark mode ────────────────────────────────────────────────── */
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    var lang = localStorage.getItem('srm-lang') || 'de';
+    var t = i18n[lang] || i18n['de'];
     document.querySelectorAll('.srm-theme-btn').forEach(function (btn) {
       var icon  = btn.querySelector('i');
       var label = btn.querySelector('.pref-label');
       if (theme === 'dark') {
         if (icon)  icon.className = 'bi bi-sun';
-        if (label) label.textContent = 'Hellmodus';
+        if (label) label.textContent = t['theme.toLight'];
         btn.classList.add('active');
       } else {
         if (icon)  icon.className = 'bi bi-moon-stars';
-        if (label) label.textContent = 'Dunkelmodus';
+        if (label) label.textContent = t['theme.toDark'];
         btn.classList.remove('active');
       }
     });
     localStorage.setItem('srm-theme', theme);
+    document.dispatchEvent(new CustomEvent('srm:themechange'));
   }
 
   function applyLangLabel(lang) {
@@ -293,6 +342,7 @@
         var next = current === 'de' ? 'en' : 'de';
         applyLang(next);
         applyLangLabel(next);
+        applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
       });
     });
   });

@@ -21,10 +21,16 @@ public class AgentController {
     private final UserService userService;
 
     @GetMapping("/requests")
-    public String openRequests(Model model, Authentication auth) {
+    public String openRequests(Model model, Authentication auth,
+                               @RequestParam(required = false) String search) {
         User currentUser = userService.findByEmail(auth.getName());
-        model.addAttribute("openRequests", requestService.getOpenRequests());
-        model.addAttribute("myRequests", requestService.getRequestsAssignedTo(currentUser));
+        model.addAttribute("openRequests",       requestService.getOpenRequests());
+        model.addAttribute("inProgressRequests", requestService.getInProgressRequests());
+        model.addAttribute("waitingRequests",     requestService.getWaitingRequests());
+        model.addAttribute("completedRequests",   requestService.getCompletedRequests());
+        model.addAttribute("myRequests",          requestService.getRequestsAssignedTo(currentUser));
+        model.addAttribute("searchResults",       requestService.searchAll(search));
+        model.addAttribute("search", search);
         model.addAttribute("currentUser", currentUser);
         return "agent/requests";
     }

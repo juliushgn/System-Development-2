@@ -69,21 +69,24 @@
         <div class="card-body" style="padding:16px 20px;">
             <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px;">
                 Demo-Zugänge
-                <span style="font-weight:400;color:var(--text-dim);">— Passwort: <code style="font-size:11px;background:var(--bg-surface);color:var(--text-muted);padding:1px 5px;border-radius:3px;border:1px solid var(--border);">password123</code></span>
+                <span style="font-weight:400;color:var(--text-dim);">— Klicken zum Ausfüllen</span>
             </p>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-                <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <button type="button" class="demo-account-btn" onclick="fillDemo('alice@company.com')">
                     <span class="chip">Mitarbeiter</span>
-                    <span style="font-size:13px;color:var(--text-muted);">alice@company.com</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="demo-email">alice@company.com</span>
+                    <i class="bi bi-arrow-right-circle demo-arrow"></i>
+                </button>
+                <button type="button" class="demo-account-btn" onclick="fillDemo('carol@company.com')">
                     <span class="chip">Service Agent</span>
-                    <span style="font-size:13px;color:var(--text-muted);">carol@company.com</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="demo-email">carol@company.com</span>
+                    <i class="bi bi-arrow-right-circle demo-arrow"></i>
+                </button>
+                <button type="button" class="demo-account-btn" onclick="fillDemo('eve@company.com')">
                     <span class="chip" style="background:var(--blue-tonal);color:var(--blue);border-color:transparent;">Manager</span>
-                    <span style="font-size:13px;color:var(--text-muted);">eve@company.com</span>
-                </div>
+                    <span class="demo-email">eve@company.com</span>
+                    <i class="bi bi-arrow-right-circle demo-arrow"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -91,5 +94,46 @@
 </div>
 
 <script th:src="@{/js/main.js}"></script>
+<script>
+function fillDemo(email) {
+    document.getElementById('username').value = email;
+    document.getElementById('password').value = 'password123';
+    document.getElementById('username').focus();
+}
+</script>
+<style>
+.demo-account-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background var(--dur), border-color var(--dur);
+}
+.demo-account-btn:hover {
+    background: var(--hover-neutral);
+    border-color: var(--border);
+}
+.demo-account-btn:hover .demo-arrow {
+    opacity: 1;
+}
+.demo-email {
+    font-size: 13px;
+    color: var(--text-muted);
+    flex: 1;
+}
+.demo-arrow {
+    font-size: 15px;
+    color: var(--blue);
+    opacity: 0;
+    transition: opacity var(--dur);
+}
+</style>
 </body>
 </html>

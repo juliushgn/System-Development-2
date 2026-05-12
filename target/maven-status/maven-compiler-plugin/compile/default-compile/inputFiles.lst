@@ -14,6 +14,7 @@ C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\
 C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\controller\AuthController.java
 C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\repository\CommentRepository.java
 C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\repository\ServiceRequestRepository.java
+C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\config\PasswordEncoderConfig.java
 C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\config\DataInitializer.java
 C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\controller\AgentController.java
 C:\Users\juliu\Desktop\Programmieren\Uni\System Development 2\src\main\java\com\enterprise\srm\repository\UserRepository.java

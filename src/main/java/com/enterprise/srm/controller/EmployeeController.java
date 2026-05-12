@@ -26,11 +26,28 @@ public class EmployeeController {
     public String myRequests(Model model, Authentication auth,
                              @RequestParam(required = false) String search) {
         User currentUser = userService.findByEmail(auth.getName());
+        var allRequests = requestService.getRequestsForEmployee(currentUser);
         var requests = (search != null && !search.isBlank())
                 ? requestService.searchForEmployee(currentUser, search)
-                : requestService.getRequestsForEmployee(currentUser);
+                : allRequests;
+
+        var waitingRequests = allRequests.stream()
+                .filter(r -> r.getStatus() == RequestStatus.WAITING_FOR_INFO)
+                .toList();
+        var activeRequests = allRequests.stream()
+                .filter(r -> r.getStatus() == RequestStatus.NEW
+                          || r.getStatus() == RequestStatus.ASSIGNED
+                          || r.getStatus() == RequestStatus.IN_PROGRESS)
+                .toList();
+        var completedRequests = allRequests.stream()
+                .filter(r -> r.getStatus() == RequestStatus.RESOLVED
+                          || r.getStatus() == RequestStatus.CLOSED)
+                .toList();
 
         model.addAttribute("requests", requests);
+        model.addAttribute("waitingRequests", waitingRequests);
+        model.addAttribute("activeRequests", activeRequests);
+        model.addAttribute("completedRequests", completedRequests);
         model.addAttribute("search", search);
         model.addAttribute("currentUser", currentUser);
         return "employee/requests";
@@ -74,7 +91,6 @@ public class EmployeeController {
         User currentUser = userService.findByEmail(auth.getName());
         ServiceRequest request = requestService.findById(id);
 
-        // Employees can only see their own requests
         if (!request.getSubmittedBy().getId().equals(currentUser.getId())
             && currentUser.getRole() == Role.EMPLOYEE) {
             return "redirect:/employee/requests?error=forbidden";
@@ -84,6 +100,27 @@ public class EmployeeController {
         model.addAttribute("comments", requestService.getPublicComments(request));
         model.addAttribute("currentUser", currentUser);
         return "employee/request-detail";
+    }
+
+    @PostMapping("/requests/{id}/comment")
+    public String addComment(@PathVariable Long id,
+                             @RequestParam String content,
+                             Authentication auth,
+                             RedirectAttributes redirectAttributes) {
+        User currentUser = userService.findByEmail(auth.getName());
+        ServiceRequest request = requestService.findById(id);
+
+        if (!request.getSubmittedBy().getId().equals(currentUser.getId())) {
+            return "redirect:/employee/requests?error=forbidden";
+        }
+        if (content == null || content.isBlank()) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Nachricht darf nicht leer sein.");
+            return "redirect:/employee/requests/" + id;
+        }
+
+        requestService.addComment(request, currentUser, content.trim(), false, false);
+        redirectAttributes.addFlashAttribute("successMsg", "Antwort gesendet.");
+        return "redirect:/employee/requests/" + id;
     }
 
     // DTO for form binding

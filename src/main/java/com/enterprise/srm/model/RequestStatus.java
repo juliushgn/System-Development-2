@@ -23,6 +23,8 @@ public enum RequestStatus {
     }
 
     public boolean canTransitionTo(RequestStatus target) {
+        if (this == CLOSED) return false;
+        if (target == CLOSED) return true;
         return allowedTransitions.contains(target.name());
     }
 

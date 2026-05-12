@@ -11,45 +11,7 @@
 <div class="srm-layout">
 
     <!-- ── Sidebar ──────────────────────────────────────────────── -->
-    <aside class="srm-sidebar" id="sidebar">
-        <a class="srm-brand" th:href="@{/}">
-            <div class="srm-brand-mark"><i class="bi bi-ticket-detailed"></i></div>
-            <span class="srm-brand-name">SRM <em>System</em></span>
-        </a>
-
-        <nav class="srm-nav">
-            <span class="srm-nav-label" data-i18n="nav.label">Navigation</span>
-            <a class="srm-nav-item" th:href="@{/employee/requests}">
-                <i class="bi bi-list-ul"></i>
-                <span data-i18n="nav.myRequests">Meine Anfragen</span>
-            </a>
-            <a class="srm-nav-item active" th:href="@{/employee/requests/new}">
-                <i class="bi bi-plus-circle"></i>
-                <span data-i18n="nav.newRequest">Neue Anfrage</span>
-            </a>
-        </nav>
-
-        <div class="srm-sidebar-footer">
-            <div class="srm-sidebar-prefs">
-                <button type="button" class="srm-pref-btn srm-theme-btn" title="Dunkelmodus"><i class="bi bi-moon-stars"></i><span class="pref-label">Dunkelmodus</span></button>
-                <button type="button" class="srm-pref-btn srm-lang-btn" title="English"><i class="bi bi-translate"></i><span class="pref-label">English</span></button>
-            </div>
-            <div class="srm-user-row">
-                <div class="srm-avatar"
-                     th:text="${#strings.substring(currentUser.firstName,0,1) + #strings.substring(currentUser.lastName,0,1)}">AM</div>
-                <div>
-                    <div class="srm-user-info-name" th:text="${currentUser.fullName}">Alice Meyer</div>
-                    <div class="srm-user-info-role" data-i18n="role.employee">Mitarbeiter</div>
-                </div>
-            </div>
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="srm-logout-btn">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span data-i18n="nav.logout">Abmelden</span>
-                </button>
-            </form>
-        </div>
-    </aside>
+    <aside th:replace="~{fragments/sidebar :: sidebar('newRequest')}"></aside>
 
     <!-- ── Main ─────────────────────────────────────────────────── -->
     <div class="srm-main">

@@ -57,6 +57,8 @@ class ServiceRequestServiceTest {
         request.setSubmittedBy(employee);
     }
 
+    // ── createRequest ────────────────────────────────────────────────────────
+
     @Test
     void createRequest_shouldSetStatusNew() {
         when(requestRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -75,6 +77,24 @@ class ServiceRequestServiceTest {
     }
 
     @Test
+    void createRequest_shouldTrimWhitespace() {
+        when(requestRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ServiceRequest result = service.createRequest(
+                "  Padded title  ",
+                "  Padded description with enough text.  ",
+                RequestCategory.FACILITY,
+                Priority.LOW,
+                employee
+        );
+
+        assertThat(result.getTitle()).isEqualTo("Padded title");
+        assertThat(result.getDescription()).isEqualTo("Padded description with enough text.");
+    }
+
+    // ── assignRequest ────────────────────────────────────────────────────────
+
+    @Test
     void assignRequest_shouldTransitionFromNewToAssigned() {
         when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
         when(userRepository.findById(2L)).thenReturn(Optional.of(agent));
@@ -87,15 +107,29 @@ class ServiceRequestServiceTest {
     }
 
     @Test
-    void assignRequest_shouldThrowWhenNotNew() {
-        request.setStatus(RequestStatus.RESOLVED);
+    void assignRequest_shouldNotChangeStatusIfAlreadyInProgress() {
+        request.setStatus(RequestStatus.IN_PROGRESS);
+        request.setAssignedTo(agent);
         when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
         when(userRepository.findById(2L)).thenReturn(Optional.of(agent));
+        when(requestRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        assertThatThrownBy(() -> service.assignRequest(1L, 2L))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Cannot transition");
+        ServiceRequest result = service.assignRequest(1L, 2L);
+
+        assertThat(result.getStatus()).isEqualTo(RequestStatus.IN_PROGRESS);
     }
+
+    @Test
+    void assignRequest_shouldThrowWhenAgentNotFound() {
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.assignRequest(1L, 99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Agent not found");
+    }
+
+    // ── updateStatus ─────────────────────────────────────────────────────────
 
     @Test
     void updateStatus_assignedToInProgress_shouldSucceed() {
@@ -122,9 +156,53 @@ class ServiceRequestServiceTest {
     }
 
     @Test
+    void updateStatus_withBlankComment_shouldNotSaveComment() {
+        request.setStatus(RequestStatus.ASSIGNED);
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(requestRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.updateStatus(1L, RequestStatus.IN_PROGRESS, agent, "   ", false);
+
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_toResolved_shouldSetResolvedAt() {
+        request.setStatus(RequestStatus.IN_PROGRESS);
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(requestRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ServiceRequest result = service.updateStatus(1L, RequestStatus.RESOLVED, agent, null, false);
+
+        assertThat(result.getResolvedAt()).isNotNull();
+    }
+
+    @Test
+    void updateStatus_invalidTransition_shouldThrow() {
+        request.setStatus(RequestStatus.NEW);
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+
+        assertThatThrownBy(() -> service.updateStatus(1L, RequestStatus.RESOLVED, agent, null, false))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Cannot transition");
+    }
+
+    @Test
+    void updateStatus_closedTicket_cannotTransitionAnywhere() {
+        request.setStatus(RequestStatus.CLOSED);
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+
+        assertThatThrownBy(() -> service.updateStatus(1L, RequestStatus.IN_PROGRESS, agent, null, false))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    // ── Status transition rules ──────────────────────────────────────────────
+
+    @Test
     void statusTransitions_closedIsTerminal() {
         assertThat(RequestStatus.CLOSED.canTransitionTo(RequestStatus.NEW)).isFalse();
         assertThat(RequestStatus.CLOSED.canTransitionTo(RequestStatus.IN_PROGRESS)).isFalse();
+        assertThat(RequestStatus.CLOSED.canTransitionTo(RequestStatus.RESOLVED)).isFalse();
         assertThat(RequestStatus.CLOSED.getAllowedTransitions()).isEmpty();
     }
 
@@ -135,6 +213,69 @@ class ServiceRequestServiceTest {
     }
 
     @Test
+    void statusTransitions_anyStatusCanTransitionToClosed() {
+        assertThat(RequestStatus.NEW.canTransitionTo(RequestStatus.CLOSED)).isTrue();
+        assertThat(RequestStatus.ASSIGNED.canTransitionTo(RequestStatus.CLOSED)).isTrue();
+        assertThat(RequestStatus.IN_PROGRESS.canTransitionTo(RequestStatus.CLOSED)).isTrue();
+        assertThat(RequestStatus.WAITING_FOR_INFO.canTransitionTo(RequestStatus.CLOSED)).isTrue();
+        assertThat(RequestStatus.RESOLVED.canTransitionTo(RequestStatus.CLOSED)).isTrue();
+    }
+
+    @Test
+    void statusTransitions_newCanOnlyGoToAssigned() {
+        assertThat(RequestStatus.NEW.canTransitionTo(RequestStatus.ASSIGNED)).isTrue();
+        assertThat(RequestStatus.NEW.canTransitionTo(RequestStatus.IN_PROGRESS)).isFalse();
+        assertThat(RequestStatus.NEW.canTransitionTo(RequestStatus.RESOLVED)).isFalse();
+        assertThat(RequestStatus.NEW.canTransitionTo(RequestStatus.WAITING_FOR_INFO)).isFalse();
+    }
+
+    @Test
+    void statusTransitions_waitingForInfoCanReturnToInProgress() {
+        assertThat(RequestStatus.WAITING_FOR_INFO.canTransitionTo(RequestStatus.IN_PROGRESS)).isTrue();
+        assertThat(RequestStatus.WAITING_FOR_INFO.canTransitionTo(RequestStatus.RESOLVED)).isTrue();
+    }
+
+    // ── searchForEmployee ────────────────────────────────────────────────────
+
+    @Test
+    void searchForEmployee_withBlankQuery_returnsAllForEmployee() {
+        when(requestRepository.findBySubmittedByOrderByCreatedAtDesc(employee))
+                .thenReturn(List.of(request));
+
+        List<ServiceRequest> result = service.searchForEmployee(employee, "");
+
+        assertThat(result).hasSize(1);
+        verify(requestRepository).findBySubmittedByOrderByCreatedAtDesc(employee);
+        verify(requestRepository, never())
+                .findBySubmittedByAndTitleContainingIgnoreCaseOrSubmittedByAndDescriptionContainingIgnoreCase(
+                        any(), any(), any(), any());
+    }
+
+    @Test
+    void searchForEmployee_withNullQuery_returnsAllForEmployee() {
+        when(requestRepository.findBySubmittedByOrderByCreatedAtDesc(employee))
+                .thenReturn(List.of(request));
+
+        List<ServiceRequest> result = service.searchForEmployee(employee, null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void searchForEmployee_withQuery_delegatesToSearchRepo() {
+        when(requestRepository
+                .findBySubmittedByAndTitleContainingIgnoreCaseOrSubmittedByAndDescriptionContainingIgnoreCase(
+                        employee, "laptop", employee, "laptop"))
+                .thenReturn(List.of(request));
+
+        List<ServiceRequest> result = service.searchForEmployee(employee, "laptop");
+
+        assertThat(result).hasSize(1);
+    }
+
+    // ── getRequestsForEmployee ───────────────────────────────────────────────
+
+    @Test
     void getRequestsForEmployee_shouldDelegateToRepo() {
         when(requestRepository.findBySubmittedByOrderByCreatedAtDesc(employee))
                 .thenReturn(List.of(request));
@@ -143,5 +284,29 @@ class ServiceRequestServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0)).isEqualTo(request);
+    }
+
+    // ── addComment ───────────────────────────────────────────────────────────
+
+    @Test
+    void addComment_shouldPersistWithCorrectFields() {
+        when(commentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Comment result = service.addComment(request, agent, "Looking into this.", false, false);
+
+        assertThat(result.getContent()).isEqualTo("Looking into this.");
+        assertThat(result.getAuthor()).isEqualTo(agent);
+        assertThat(result.getRequest()).isEqualTo(request);
+        assertThat(result.isResolutionNote()).isFalse();
+        assertThat(result.getInternal()).isFalse();
+    }
+
+    @Test
+    void addComment_internalFlag_shouldBePreserved() {
+        when(commentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Comment result = service.addComment(request, agent, "Internal note.", false, true);
+
+        assertThat(result.getInternal()).isTrue();
     }
 }
