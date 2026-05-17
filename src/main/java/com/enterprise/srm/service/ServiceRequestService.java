@@ -98,7 +98,10 @@ public class ServiceRequestService {
         validateTransition(request, newStatus);
 
         request.setStatus(newStatus);
-        if (newStatus == RequestStatus.RESOLVED || newStatus == RequestStatus.CLOSED) {
+        if (newStatus == RequestStatus.IN_PROGRESS) {
+            request.setResolvedAt(null);
+        } else if ((newStatus == RequestStatus.RESOLVED || newStatus == RequestStatus.CLOSED)
+                && request.getResolvedAt() == null) {
             request.setResolvedAt(LocalDateTime.now());
         }
 
@@ -111,6 +114,11 @@ public class ServiceRequestService {
 
     public Comment addComment(ServiceRequest request, User author, String content,
                               boolean isResolutionNote, boolean internal) {
+        if (request.getStatus() == RequestStatus.WAITING_FOR_INFO) {
+            request.setStatus(RequestStatus.IN_PROGRESS);
+            requestRepository.save(request);
+        }
+
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setRequest(request);
