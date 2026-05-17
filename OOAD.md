@@ -9,7 +9,7 @@ Employees at a medium-sized company manage internal service requests through ema
 - A **User** belongs to exactly one **Role** (EMPLOYEE, SERVICE_AGENT, MANAGER).
 - An **Employee** submits **ServiceRequests** which they can view and track.
 - A **Service Agent** picks up open requests, updates their status, and communicates via **Comments**.
-- A **Manager** has read-only access across all requests and uses dashboard statistics to monitor workload and resolution rates.
+- A **Manager** has access across all requests and uses dashboard statistics to monitor workload and resolution rates.
 - Each **ServiceRequest** has a **Priority**, a **RequestCategory**, and a **RequestStatus** that advances through a defined lifecycle.
 - **Comments** belong to a request and carry an author, a timestamp, and optional flags (`resolutionNote`, `internal`).
 

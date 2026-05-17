@@ -60,7 +60,7 @@ com.enterprise.srm/
 ## Key Features
 
 - **Role-based access control** via Spring Security
-- **Request lifecycle**: `NEW → ASSIGNED → IN_PROGRESS → WAITING_FOR_INFO → RESOLVED → CLOSED`
+- **Request lifecycle**: `NEW → ASSIGNED → IN_PROGRESS → WAITING_FOR_INFO → RESOLVED -- CLOSED for all tickets that shouldn't be resolved/not possible to be resolved)`
 - **Enforced status transitions** — invalid transitions throw `IllegalStateException`
 - **Persistent H2 file database** — data survives application restarts
 - **Full-text search** for employees and managers
