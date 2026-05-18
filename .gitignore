@@ -1,0 +1,16 @@
+# Maven build output
+target/
+
+# H2 database files
+data/
+
+# IDE
+.idea/
+*.iml
+nbproject/
+nb-configuration.xml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
