@@ -131,6 +131,9 @@
       'dash.noAgent':       'Noch keine Zuweisung.',
       'dash.recent':        'Neueste Anfragen',
       'dash.viewAll':       'Alle ansehen',
+      'dash.filterStatus':  'Status:',
+      'dash.filterCat':     'Kategorie:',
+      'dash.filterAll':     'Alle',
       // Manager all requests
       'mgrReq.title':       'Alle Anfragen',
       'mgrReq.subtitle':    'Vollständige Übersicht aller Serviceanfragen',
@@ -268,6 +271,9 @@
       'dash.noAgent':       'No assignments yet.',
       'dash.recent':        'Recent requests',
       'dash.viewAll':       'View all',
+      'dash.filterStatus':  'Status:',
+      'dash.filterCat':     'Category:',
+      'dash.filterAll':     'All',
       // Manager all requests
       'mgrReq.title':       'All Requests',
       'mgrReq.subtitle':    'Complete overview of all service requests',

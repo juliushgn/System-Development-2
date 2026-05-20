@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- ── Recent requests table ─────────────────────────── -->
+            <!-- ── Recent requests ───────────────────────────────── -->
             <div class="card">
                 <div class="card-header">
                     <i class="bi bi-clock-history" style="color:var(--blue);"></i>
@@ -149,8 +149,7 @@
                                 </td>
                                 <td class="cell-muted" th:text="${req.submittedBy.fullName}"></td>
                                 <td class="cell-muted" th:text="${req.assignedTo?.fullName ?: '—'}"></td>
-                                <td class="cell-muted"
-                                    th:text="${#temporals.format(req.createdAt, 'dd.MM.yy')}"></td>
+                                <td class="cell-muted" th:text="${#temporals.format(req.createdAt, 'dd.MM.yy')}"></td>
                                 <td>
                                     <a th:href="@{/agent/requests/{id}(id=${req.id})}"
                                        class="btn btn-tonal btn-sm">

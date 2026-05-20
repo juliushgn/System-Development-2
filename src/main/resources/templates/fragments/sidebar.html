@@ -39,8 +39,8 @@
             </a>
         </th:block>
 
-        <!-- Agent / Manager: queue -->
-        <th:block th:unless="${currentUser.role.name() == 'EMPLOYEE'}">
+        <!-- Agent queue -->
+        <th:block th:if="${currentUser.role.name() == 'SERVICE_AGENT'}">
             <a class="srm-nav-item" th:classappend="${activePage == 'queue'} ? 'active'"
                th:href="@{/agent/requests}">
                 <i class="bi bi-inbox"></i>

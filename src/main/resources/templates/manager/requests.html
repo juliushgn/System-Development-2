@@ -28,36 +28,61 @@
                     <h1 class="page-title" data-i18n="mgrReq.title">Alle Anfragen</h1>
                     <p class="page-subtitle" data-i18n="mgrReq.subtitle">Vollständige Übersicht aller Serviceanfragen</p>
                 </div>
-                <span class="chip" th:text="${#lists.size(requests)} + ' gesamt'"></span>
+                <span class="chip" id="visibleCount" th:text="${#lists.size(requests)} + ' gesamt'"></span>
             </div>
 
-            <!-- Search -->
-            <form th:action="@{/manager/requests}" method="get" class="mb-5">
-                <div class="input-group" style="max-width:460px;">
-                    <input type="text" class="form-control" name="search"
-                           data-i18n-ph="mgrReq.searchPh"
-                           placeholder="Anfragen durchsuchen…" th:value="${search}">
-                    <button type="submit" class="btn" aria-label="Suchen">
-                        <i class="bi bi-search"></i>
-                    </button>
-                    <a th:if="${search}" th:href="@{/manager/requests}" class="btn" aria-label="Zurücksetzen">
-                        <i class="bi bi-x-lg"></i>
-                    </a>
-                </div>
-            </form>
-
-            <!-- Table card -->
             <div class="card">
                 <div class="card-header">
                     <i class="bi bi-table" style="color:var(--blue);"></i>
-                    <span class="card-header-title" data-i18n="nav.allRequests">Anfragen</span>
-                    <span class="chip" th:text="${#lists.size(requests)} + ' '">0 </span>
+                    <span class="card-header-title" data-i18n="nav.allRequests">Alle Anfragen</span>
+                </div>
+
+                <!-- Search + filters -->
+                <div style="padding:12px 20px 4px; display:flex; flex-direction:column; gap:10px;">
+
+                    <!-- Text search -->
+                    <div class="input-group" style="max-width:400px;">
+                        <input type="text" id="reqSearch" class="form-control"
+                               data-i18n-ph="mgrReq.searchPh"
+                               placeholder="Anfragen durchsuchen…">
+                        <button type="button" class="btn"
+                                onclick="document.getElementById('reqSearch').value=''; applyFilters();">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Status filter -->
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                        <span style="font-size:12px; color:var(--text-muted); margin-right:2px;"
+                              data-i18n="dash.filterStatus">Status:</span>
+                        <button class="srm-filter-btn active" data-filter-type="status" data-filter-value="ALL"
+                                data-i18n="dash.filterAll">Alle</button>
+                        <button class="srm-filter-btn" data-filter-type="status" data-filter-value="NEW">New</button>
+                        <button class="srm-filter-btn" data-filter-type="status" data-filter-value="ASSIGNED">Assigned</button>
+                        <button class="srm-filter-btn" data-filter-type="status" data-filter-value="IN_PROGRESS">In Progress</button>
+                        <button class="srm-filter-btn" data-filter-type="status" data-filter-value="WAITING_FOR_INFO">Waiting</button>
+                        <button class="srm-filter-btn" data-filter-type="status" data-filter-value="RESOLVED">Resolved</button>
+                        <button class="srm-filter-btn" data-filter-type="status" data-filter-value="CLOSED">Closed</button>
+                    </div>
+
+                    <!-- Category filter -->
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-bottom:8px;">
+                        <span style="font-size:12px; color:var(--text-muted); margin-right:2px;"
+                              data-i18n="dash.filterCat">Kategorie:</span>
+                        <button class="srm-filter-btn active" data-filter-type="category" data-filter-value="ALL"
+                                data-i18n="dash.filterAll">Alle</button>
+                        <button class="srm-filter-btn" data-filter-type="category" data-filter-value="IT_SUPPORT">IT Support</button>
+                        <button class="srm-filter-btn" data-filter-type="category" data-filter-value="FACILITY">Facility</button>
+                        <button class="srm-filter-btn" data-filter-type="category" data-filter-value="HR_DOCUMENT">HR Document</button>
+                        <button class="srm-filter-btn" data-filter-type="category" data-filter-value="OFFICE_SUPPLIES">Office Supplies</button>
+                        <button class="srm-filter-btn" data-filter-type="category" data-filter-value="ACCESS_PERMISSION">Access / Permission</button>
+                        <button class="srm-filter-btn" data-filter-type="category" data-filter-value="OTHER">Other</button>
+                    </div>
                 </div>
 
                 <div th:if="${#lists.isEmpty(requests)}" class="empty-state">
                     <i class="bi bi-search"></i>
-                    <p th:if="${search}">Keine Anfragen für „<span th:text="${search}"></span>" gefunden.</p>
-                    <p th:unless="${search}" data-i18n="mgrReq.empty">Keine Anfragen gefunden.</p>
+                    <p data-i18n="mgrReq.empty">Keine Anfragen gefunden.</p>
                 </div>
 
                 <div th:unless="${#lists.isEmpty(requests)}" class="srm-table-wrap">
@@ -75,8 +100,11 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr th:each="req : ${requests}">
+                        <tbody id="reqTableBody">
+                            <tr th:each="req : ${requests}"
+                                th:attr="data-status=${req.status.name()},
+                                         data-category=${req.category.name()},
+                                         data-search=${req.title + ' ' + req.requestNumber + ' ' + req.submittedBy.fullName}">
                                 <td><span class="cell-mono" th:text="${req.requestNumber}"></span></td>
                                 <td class="cell-primary" th:text="${req.title}"></td>
                                 <td><span class="chip" th:text="${req.category.displayName}"></span></td>
@@ -90,8 +118,7 @@
                                 </td>
                                 <td class="cell-muted" th:text="${req.submittedBy.fullName}"></td>
                                 <td class="cell-muted" th:text="${req.assignedTo?.fullName ?: '—'}"></td>
-                                <td class="cell-muted"
-                                    th:text="${#temporals.format(req.createdAt, 'dd.MM.yy')}"></td>
+                                <td class="cell-muted" th:text="${#temporals.format(req.createdAt, 'dd.MM.yy')}"></td>
                                 <td>
                                     <a th:href="@{/agent/requests/{id}(id=${req.id})}"
                                        class="btn btn-tonal btn-sm">
@@ -101,6 +128,10 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="reqEmpty" class="empty-state" style="display:none;">
+                        <i class="bi bi-search"></i>
+                        <p data-i18n="mgrReq.empty">Keine Anfragen gefunden.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,5 +140,48 @@
 
 <div class="srm-overlay" id="sidebarOverlay"></div>
 <script th:src="@{/js/main.js}"></script>
+<script>
+(function () {
+  var activeStatus   = 'ALL';
+  var activeCategory = 'ALL';
+
+  function applyFilters() {
+    var query = (document.getElementById('reqSearch').value || '').toLowerCase().trim();
+    var rows  = document.querySelectorAll('#reqTableBody tr');
+    var visible = 0;
+
+    rows.forEach(function (row) {
+      var statusMatch   = activeStatus   === 'ALL' || row.dataset.status   === activeStatus;
+      var categoryMatch = activeCategory === 'ALL' || row.dataset.category === activeCategory;
+      var searchMatch   = !query || (row.dataset.search || '').toLowerCase().includes(query);
+      var show = statusMatch && categoryMatch && searchMatch;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    var countEl = document.getElementById('visibleCount');
+    if (countEl) countEl.textContent = visible + ' gesamt';
+
+    var emptyEl = document.getElementById('reqEmpty');
+    if (emptyEl) emptyEl.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  document.querySelectorAll('.srm-filter-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var type  = btn.dataset.filterType;
+      var value = btn.dataset.filterValue;
+      document.querySelectorAll('.srm-filter-btn[data-filter-type="' + type + '"]')
+        .forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      if (type === 'status')   activeStatus   = value;
+      if (type === 'category') activeCategory = value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('reqSearch').addEventListener('input', applyFilters);
+  window.applyFilters = applyFilters;
+})();
+</script>
 </body>
 </html>

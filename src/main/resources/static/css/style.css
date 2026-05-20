@@ -792,6 +792,19 @@ textarea.form-control {
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
+/* ── Dashboard filter buttons ─────────────────────────────────────── */
+.srm-filter-btn {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; line-height: 1;
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text-muted); cursor: pointer;
+  transition: background var(--dur), color var(--dur), border-color var(--dur);
+  white-space: nowrap;
+}
+.srm-filter-btn:hover { background: var(--hover-neutral); color: var(--text); }
+.srm-filter-btn.active { background: var(--blue-tonal); color: var(--blue); border-color: var(--blue); font-weight: 600; }
+
 /* ── Progress ─────────────────────────────────────────────────────── */
 .progress {
   height: 6px;
